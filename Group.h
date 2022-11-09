@@ -8,6 +8,7 @@ class Group
 	Group(const char* name, Student** students, size_t length);
 	~Group();
 
+	size_t getId();
 	char* getName();
 	Student** getStudents();
 	size_t getLength();
@@ -16,17 +17,29 @@ class Group
 	void setStudents(Student** students, size_t length);
 	void setLength(size_t length);
 
+	void appendStudent(Student* student);
+	void deleteStudent(Student* student);
+	void deleteStudent(Student** students, size_t len, Student* student);
+	void deleteStudentById(size_t id);
+	Student* getStudentById(size_t id);
+	void clearGroup();
+
 	void print();
 
 	private:
 
+	static size_t _staticId;
+	size_t _id;
 	char* _name;
 	Student** _students;
 	size_t _len;
 };
 
+size_t Group::_staticId = 0;
+
 inline Group::Group()
 {
+	_id = ++_staticId;
 	_name = nullptr;
 	_students = nullptr;
 	_len = 0;
@@ -41,7 +54,7 @@ inline Group::Group(const char* name)
 inline Group::Group(const char* name, Student** students, size_t length)
 	: Group(name)
 {
-	setStudents(students,length);
+	setStudents(students, length);
 	setLength(length);
 }
 
@@ -56,6 +69,8 @@ inline Group::~Group()
 	_name = nullptr;
 	_students = nullptr;
 }
+
+inline size_t Group::getId() { return _id; }
 
 inline char* Group::getName() { return _name; }
 
@@ -107,6 +122,124 @@ inline void Group::setLength(size_t length)
 		return;
 	}
 	assert(!"Length must be greater than 0");
+}
+
+inline void Group::appendStudent(Student* student)
+{
+	if (_students == nullptr)
+	{
+		_students = new Student * [_len + 1] {student};
+		return;
+	}
+	for (size_t i = 0; i < _len; i++)
+	{
+		if (_students[i] == student)
+			assert(!"Student already exits");
+	}
+	Student** students = new Student * [_len + 1];
+	for (size_t i = 0; i < _len; i++)
+	{
+		students[i] = _students[i];
+	}
+	students[_len] = student;
+	_len++;
+	delete[] _students;
+	_students = students;
+}
+
+inline void Group::deleteStudent(Student* student)
+{
+	if (_students == nullptr)
+		assert(!"Student not exits");
+	bool temp = true;
+	for (size_t i = 0; i < _len; i++)
+	{
+		if (_students[i] == student)
+		{
+			temp = false;
+			delete _students[i];
+			_students[i] = nullptr;
+			break;
+		}
+	}
+	if (temp)
+		assert(!"Student not exits");
+	Student** students = new Student * [_len - 1];
+	for (size_t i = 0; i < _len - 1; i++)
+	{
+		if (_students[i] == nullptr)
+			temp++;
+		students[i] = _students[i + temp];
+	}
+	_len--;
+	delete[] _students;
+	_students = students;
+}
+
+inline void Group::deleteStudent(Student** students, size_t len, Student* student)
+{
+	if (students == nullptr)
+		assert(!"Student not exits");
+	bool temp = true;
+	for (size_t i = 0; i < len; i++)
+	{
+		if (students[i] == student)
+		{
+			temp = false;
+			delete students[i];
+			students[i] = nullptr;
+			break;
+		}
+	}
+	if (temp)
+		assert(!"Student not exits");
+	Student** tempstudents = new Student * [len - 1];
+	for (size_t i = 0; i < len - 1; i++)
+	{
+		if (students[i] == nullptr)
+			temp++;
+		tempstudents[i] = students[i + temp];
+	}
+	len--;
+	delete[] students;
+	students = tempstudents;
+}
+
+inline void Group::deleteStudentById(size_t id)
+{
+	if (_students == nullptr)
+		assert(!"Student not exits");
+	for (size_t i = 0; i < _len; i++)
+	{
+		if (_students[i]->getId() == id)
+			return deleteStudent(_students[i]);
+	}
+}
+
+inline Student* Group::getStudentById(size_t id)
+{
+	if (_students == nullptr)
+		assert(!"Student not exits");
+	for (size_t i = 0; i < _len; i++)
+	{
+		if (_students[i]->getId() == id)
+			return _students[i];
+	}
+	assert(!"Student not exits");
+}
+
+inline void Group::clearGroup()
+{
+	if (_students == nullptr)
+		return;
+	for (size_t i = 0; i < _len; i++)
+	{
+		delete _students[i];
+		_students[i] = nullptr;
+	}
+	delete[] _students;
+	_students = nullptr;
+	_len = 0;
 }
 
 inline void Group::print()

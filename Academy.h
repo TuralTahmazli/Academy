@@ -16,6 +16,12 @@ class Academy
 	void setGroups(Group** groups, size_t length);
 	void setLength(size_t length);
 
+    void appendGroup(Group* group);
+    void deleteGroup(Group* group);
+    void deleteGroup(Group** groups, size_t len, Group* group);
+    void deleteGroupById(size_t id);
+    Group* getGroupById(size_t id);
+    void clearAcademy();
 	void print();
 
 	private:
@@ -107,6 +113,124 @@ inline void Academy::setLength(size_t length)
 		return;
 	}
 	assert(!"Length must be greater than 0");
+}
+
+inline void Academy::appendGroup(Group* group)
+{
+    if (_groups == nullptr)
+    {
+        _groups = new Group * [_len + 1] {group};
+        return;
+    }
+    for (size_t i = 0; i < _len; i++)
+    {
+        if (_groups[i] == group)
+            assert(!"Group already exits");
+    }
+    Group** groups = new Group * [_len + 1];
+    for (size_t i = 0; i < _len; i++)
+    {
+        groups[i] = _groups[i];
+    }
+    groups[_len] = group;
+    _len++;
+    delete[] _groups;
+    _groups = groups;
+}
+
+inline void Academy::deleteGroup(Group* group)
+{
+    if (_groups == nullptr)
+        assert(!"Group not exits");
+    bool temp = true;
+    for (size_t i = 0; i < _len; i++)
+    {
+        if (_groups[i] == group)
+        {
+            temp = false;
+            delete _groups[i];
+            _groups[i] = nullptr;
+            break;
+        }
+    }
+    if (temp)
+        assert(!"Group not exits");
+    Group** groups = new Group * [_len - 1];
+    for (size_t i = 0; i < _len - 1; i++)
+    {
+        if (_groups[i] == nullptr)
+            temp++;
+        groups[i] = _groups[i + temp];
+    }
+    _len--;
+    delete[] _groups;
+    _groups = groups;
+}
+
+inline void Academy::deleteGroup(Group** groups, size_t len, Group* group)
+{
+    if (groups == nullptr)
+        assert(!"Group not exits");
+    bool temp = true;
+    for (size_t i = 0; i < len; i++)
+    {
+        if (groups[i] == group)
+        {
+            temp = false;
+            delete groups[i];
+            groups[i] = nullptr;
+            break;
+        }
+    }
+    if (temp)
+        assert(!"Group not exits");
+    Group** tempgroups = new Group * [len - 1];
+    for (size_t i = 0; i < len - 1; i++)
+    {
+        if (groups[i] == nullptr)
+            temp++;
+        tempgroups[i] = groups[i + temp];
+    }
+    len--;
+    delete[] groups;
+    groups = tempgroups;
+}
+
+inline void Academy::deleteGroupById(size_t id)
+{
+    if (_groups == nullptr)
+        assert(!"Group not exits");
+    for (size_t i = 0; i < _len; i++)
+    {
+        if (_groups[i]->getId() == id)
+            return deleteGroup(_groups[i]);
+    }
+}
+
+inline Group* Academy::getGroupById(size_t id)
+{
+    if (_groups == nullptr)
+        assert(!"Group not exits");
+    for (size_t i = 0; i < _len; i++)
+    {
+        if (_groups[i]->getId() == id)
+            return _groups[i];
+    }
+    assert(!"Group not exits");
+}
+
+inline void Academy::clearAcademy()
+{
+    if (_groups == nullptr)
+        return;
+    for (size_t i = 0; i < _len; i++)
+    {
+        delete _groups[i];
+        _groups[i] = nullptr;
+    }
+    delete[] _groups;
+    _groups = nullptr;
+    _len = 0;
 }
 
 inline void Academy::print()
